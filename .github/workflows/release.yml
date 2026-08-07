@@ -1,0 +1,106 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on pushing a tag starting with 'v' (e.g. v1.0.0)
+
+jobs:
+  build-native:
+    name: Build Native (${{ matrix.os }}, ${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-latest
+            arch: aarch64
+          - os: macos-13
+            arch: amd64
+          - os: macos-14
+            arch: aarch64
+          - os: windows-latest
+            arch: amd64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup cross-compiler (Linux aarch64)
+        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+          echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "TARGET_ARCH=aarch64" >> $GITHUB_ENV
+
+      - name: Set Target Arch manually if needed
+        if: runner.os == 'Windows'
+        shell: bash
+        run: echo "TARGET_ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+
+      - name: Compile Native Code
+        shell: bash
+        run: ./build-native.sh
+
+      - name: Upload Native Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.os }}-${{ matrix.arch }}
+          path: target/classes/native/
+          retention-days: 1
+
+  package-and-release:
+    name: Package Fat JAR and Release
+    needs: build-native
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false # JNI code won't be compiled, no need to fetch the parser submodule
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Download all Native Binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: target/classes/native/
+          pattern: native-*
+          merge-multiple: true
+
+      - name: Set Maven version from tag
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "Setting POM version to $VERSION"
+          mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false
+
+      - name: Deploy to Maven Central
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: mvn deploy -P release -DskipNativeBuild=true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/*.jar
+          generate_release_notes: true
