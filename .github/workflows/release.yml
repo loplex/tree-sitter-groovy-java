@@ -106,7 +106,6 @@ jobs:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        continue-on-error: true # TEMP: Allow continuing if Maven Central rejects duplicate upload
         run: mvn deploy -P release -DskipNativeBuild=true
 
       - name: Create GitHub Release
