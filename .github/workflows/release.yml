@@ -44,18 +44,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
           echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-          echo "TARGET_ARCH=aarch64" >> $GITHUB_ENV
+          echo "ARCH_NAME=aarch64" >> $GITHUB_ENV
 
       - name: Setup cross-compiler (macOS amd64)
         if: matrix.os == 'macos-14' && matrix.arch == 'amd64'
         run: |
           echo "CC=clang -arch x86_64" >> $GITHUB_ENV
-          echo "TARGET_ARCH=amd64" >> $GITHUB_ENV
+          echo "ARCH_NAME=amd64" >> $GITHUB_ENV
 
       - name: Set Target Arch manually if needed
         if: runner.os == 'Windows'
         shell: bash
-        run: echo "TARGET_ARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+        run: echo "ARCH_NAME=${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Compile Native Code
         shell: bash
