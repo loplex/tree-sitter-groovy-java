@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # Trigger on pushing a tag starting with 'v' (e.g. v1.0.0)
 
+permissions:
+  contents: write
+
 jobs:
   build-native:
     name: Build Native (${{ matrix.os }}, ${{ matrix.arch }})
