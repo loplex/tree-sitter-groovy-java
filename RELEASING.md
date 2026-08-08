@@ -4,7 +4,7 @@ This project uses a fully automated release pipeline powered by GitHub Actions.
 
 ## Cross-Compilation Pipeline
 
-When you push a git tag starting with `v` (e.g., `v0.2.2`), a GitHub Actions workflow (`.github/workflows/release.yml`) is triggered. 
+When you push a git tag starting with `v` (e.g., `v0.2.2-1`), a GitHub Actions workflow (`.github/workflows/release.yml`) is triggered. 
 It performs cross-compilation of the JNI native library for the following OS and architectures:
 - **Linux** (`amd64`, `aarch64` via `gcc-aarch64-linux-gnu`)
 - **macOS** (`amd64`, `aarch64` / Apple Silicon)
@@ -26,10 +26,10 @@ To authorize the deployment, the following GitHub Secrets must be configured in 
 Note: Ensure your GPG public key is uploaded to public keyservers (e.g., `keyserver.ubuntu.com`), as Maven Central verifies signatures.
 
 ### How to Release
-1. Create and push a new Git tag matching the version you want to release (e.g., `v0.2.2`).
+1. Create and push a new Git tag matching the version you want to release (e.g., `v0.2.2-1`).
    ```bash
-   git tag v0.2.2
-   git push origin v0.2.2
+   git tag v0.2.2-1
+   git push origin v0.2.2-1
    ```
 2. The GitHub Action will automatically:
    - Extract the version from the tag (stripping the `v`).

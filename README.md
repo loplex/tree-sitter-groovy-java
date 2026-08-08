@@ -12,7 +12,7 @@ Add the dependency to your `pom.xml`:
 <dependency>
     <groupId>cz.loplex</groupId>
     <artifactId>tree-sitter-groovy-java</artifactId>
-    <version>0.2.2</version>
+    <version>0.2.2-1</version>
 </dependency>
 ```
 

@@ -4,7 +4,7 @@
 
     <groupId>cz.loplex</groupId>
     <artifactId>tree-sitter-groovy-java</artifactId>
-    <version>0.2.2-SNAPSHOT</version>
+    <version>0.2.2-1-SNAPSHOT</version>
 
     <name>Tree-sitter Groovy for Java</name>
     <description>JNI bindings for tree-sitter-groovy</description>
